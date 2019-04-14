@@ -61,10 +61,6 @@ def successor(s):
         }
     }
 
-    print("Start State")
-    pprint.pprint(s)
-    print("\n")
-
     animals = ["chickens", "wolves"]
     for animal in range(len(animals)):
         for i in range(s[side][animals[animal]] + 1):
@@ -76,7 +72,6 @@ def successor(s):
             this_data[side][animals[animal ^ 1]] = s[side][animals[animal ^ 1]]
             this_data[other_side][animals[animal ^ 1]] = s[other_side][animals[animal ^ 1]]
 
-            pprint.pprint(this_data)
             data.append(this_data)
 
 
@@ -88,7 +83,6 @@ def successor(s):
         this_data[side]["wolves"] = s[side]["wolves"] - 1
         this_data[other_side]["wolves"] = s[other_side]["wolves"] + 1
 
-        pprint.pprint(this_data)
         data.append(this_data)
 
     return data
