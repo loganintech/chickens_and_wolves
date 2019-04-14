@@ -1,6 +1,7 @@
 import sys
-import pprint
+import math
 import copy
+import pprint
 
 def load(path):
 
@@ -44,7 +45,7 @@ def bfs(problem, goal):
     counter = 0
     while True:
         if len(fringe) == 0:
-            return "We failed, chief"
+            return math.inf, ["We failed, chief"]
         path = fringe.pop(0)
         state = path[-1]
 
@@ -68,7 +69,7 @@ def dfs(problem, goal):
     counter = 0
     while True:
         if len(fringe) == 0:
-            return "We failed, chief"
+            return math.inf, ["We failed, chief"]
         path = fringe.pop(len(fringe) - 1)
         state = path[-1]
 
@@ -111,11 +112,14 @@ def successors(s):
     animals = ["chickens", "wolves"]
     for animal in range(len(animals)):
         for i in range(s[side][animals[animal]] + 1):
-            if i < 1 or i > 2: continue
+            if i < 1: continue
+            if i > 2: break
             this_data = copy.deepcopy(entry)
 
             this_data[side][animals[animal]] = s[side][animals[animal]] - i
             this_data[other_side][animals[animal]] = s[other_side][animals[animal]] + i
+
+            # This just copies the data, it doesn't need to modify it
             this_data[side][animals[animal ^ 1]] = s[side][animals[animal ^ 1]]
             this_data[other_side][animals[animal ^ 1]] = s[other_side][animals[animal ^ 1]]
 
@@ -147,8 +151,13 @@ if __name__ == "__main__":
     mode = args[3]
     output = args[4]
 
-    counter, path = dfs(data, goal)
-    print("Path generated in {} steps".format(counter))
+    counter, path = 0, []
+    if mode == "bfs":
+        counter, path = bfs(data, goal)
+    elif mode == "dfs":
+        counter, path = dfs(data, goal)
+
     for node in path:
         print(node)
+    print("Path generated in {} steps".format(counter))
 
