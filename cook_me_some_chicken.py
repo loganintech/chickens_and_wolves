@@ -3,6 +3,7 @@ import math
 import copy
 import pprint
 
+
 def load(path):
 
     with open(path, "r") as f:
@@ -24,6 +25,7 @@ def load(path):
 
         return data
 
+
 """
 GRAPH SEARCH Pseudocode
 
@@ -39,6 +41,7 @@ def graph_search(problem, fringe_tree) returns solution or failure
             fringe = insert_all(expand(node, problem), fringe)
  """
 
+
 def bfs(problem, goal):
     closed = {}
     fringe = [[problem]]
@@ -50,7 +53,7 @@ def bfs(problem, goal):
         state = path[-1]
 
         # print("[{}] State".format(counter), state)
-        counter+=1
+        counter += 1
 
         if state_to_dict_key(state) == state_to_dict_key(goal):
             return counter, path
@@ -86,15 +89,17 @@ def dfs(problem, goal):
                 fringe.append(new_path)
             closed[state_to_dict_key(state)] = state
 
+
 def state_to_dict_key(state):
     return "{},{},{}\n{},{},{}".format(
-            state["left"]["chickens"],
-            state["left"]["wolves"],
-            1 if state["left"]["boat"] else 0,
-            state["right"]["chickens"],
-            state["right"]["wolves"],
-            1 if state["right"]["boat"] else 0,
-        )
+        state["left"]["chickens"],
+        state["left"]["wolves"],
+        1 if state["left"]["boat"] else 0,
+        state["right"]["chickens"],
+        state["right"]["wolves"],
+        1 if state["right"]["boat"] else 0,
+    )
+
 
 def successors(s):
     data = []
@@ -112,19 +117,22 @@ def successors(s):
     animals = ["chickens", "wolves"]
     for animal in range(len(animals)):
         for i in range(s[side][animals[animal]] + 1):
-            if i < 1: continue
-            if i > 2: break
+            if i < 1:
+                continue
+            if i > 2:
+                break
             this_data = copy.deepcopy(entry)
 
             this_data[side][animals[animal]] = s[side][animals[animal]] - i
-            this_data[other_side][animals[animal]] = s[other_side][animals[animal]] + i
+            this_data[other_side][animals[animal]
+                                  ] = s[other_side][animals[animal]] + i
 
             # This just copies the data, it doesn't need to modify it
             this_data[side][animals[animal ^ 1]] = s[side][animals[animal ^ 1]]
-            this_data[other_side][animals[animal ^ 1]] = s[other_side][animals[animal ^ 1]]
+            this_data[other_side][animals[animal ^ 1]
+                                  ] = s[other_side][animals[animal ^ 1]]
 
             data.append(this_data)
-
 
     if s[side]["chickens"] > 0 and s[side]["wolves"] > 0:
         this_data = copy.deepcopy(entry)
@@ -136,13 +144,32 @@ def successors(s):
 
         data.append(this_data)
 
-
     filtered = []
     for entry in data:
         if (entry["left"]["wolves"] <= entry["left"]["chickens"] or entry["left"]["chickens"] == 0) and (entry["right"]["wolves"] <= entry["right"]["chickens"] or entry["right"]["chickens"] == 0):
             filtered.append(entry)
 
     return filtered
+
+
+def step_string(state, other):
+    chicken_difference = abs(
+        state["left"]["chickens"] - other["left"]["chickens"])
+    wolf_difference = abs(
+        state["left"]["wolves"] - other["left"]["wolves"])
+
+    return_string = "{:<8}".format("[{}]".format("Left" if state["left"]["boat"] else "Right"))
+    if chicken_difference != 0 and wolf_difference != 0:
+        return_string += "Put {} chicken and {} wolf on the boat.".format(chicken_difference, wolf_difference)
+    elif wolf_difference != 0:
+        return_string += "Put {} {} on the boat.".format(wolf_difference, "wolf" if wolf_difference == 1 else "wolves")
+    elif chicken_difference != 0:
+        return_string += "Put {} {} on the boat.".format(chicken_difference, "chicken" if chicken_difference == 1 else "chickens")
+    else:
+        return_string += "Two identical states were passed to this function."
+
+    return return_string
+
 
 if __name__ == "__main__":
     args = sys.argv
@@ -157,6 +184,8 @@ if __name__ == "__main__":
     elif mode == "dfs":
         counter, path = dfs(data, goal)
 
-    for node in path:
-        print(node)
+    import os
+    with open(output, "w") as f:
+        for node in range(len(path) - 1):
+            f.write("{}\n".format(step_string(path[node], path[node + 1])))
     print("Path generated in {} steps".format(counter))
