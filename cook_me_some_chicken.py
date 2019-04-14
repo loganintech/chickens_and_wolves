@@ -160,4 +160,3 @@ if __name__ == "__main__":
     for node in path:
         print(node)
     print("Path generated in {} steps".format(counter))
-
