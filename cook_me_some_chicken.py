@@ -27,7 +27,7 @@ def load(path):
 GRAPH SEARCH Pseudocode
 
 def graph_search(problem, fringe_tree) returns solution or failure
-    closed = []
+    closed = HASHSET_OF_VISITED_PLACES
     fringe = insert(create_node(initial_state[problem]), fringe)
     while True:
         if fringe is empty return failure
@@ -40,15 +40,62 @@ def graph_search(problem, fringe_tree) returns solution or failure
 
 def bfs(problem, goal):
     closed = {}
-    fringe = [problem]
+    fringe = [[problem]]
+    counter = 0
+    while True:
+        if len(fringe) == 0:
+            return "We failed, chief"
+        path = fringe.pop(0)
+        state = path[-1]
 
-    while fringe:
-        state = fringe.pop(0)
+        # print("[{}] State".format(counter), state)
+        counter+=1
 
-        for i in successor(state):
-            print(i)
+        if state_to_dict_key(state) == state_to_dict_key(goal):
+            return counter, path
 
-def successor(s):
+        if state_to_dict_key(state) not in closed:
+            for successor in successors(state):
+                new_path = copy.deepcopy(path)
+                new_path.append(successor)
+                fringe.append(new_path)
+            closed[state_to_dict_key(state)] = state
+
+
+def dfs(problem, goal):
+    closed = {}
+    fringe = [[problem]]
+    counter = 0
+    while True:
+        if len(fringe) == 0:
+            return "We failed, chief"
+        path = fringe.pop(len(fringe) - 1)
+        state = path[-1]
+
+        # print("[{}] State".format(counter), state)
+        counter += 1
+
+        if state_to_dict_key(state) == state_to_dict_key(goal):
+            return counter, path
+
+        if state_to_dict_key(state) not in closed:
+            for successor in successors(state):
+                new_path = copy.deepcopy(path)
+                new_path.append(successor)
+                fringe.append(new_path)
+            closed[state_to_dict_key(state)] = state
+
+def state_to_dict_key(state):
+    return "{},{},{}\n{},{},{}".format(
+            state["left"]["chickens"],
+            state["left"]["wolves"],
+            1 if state["left"]["boat"] else 0,
+            state["right"]["chickens"],
+            state["right"]["wolves"],
+            1 if state["right"]["boat"] else 0,
+        )
+
+def successors(s):
     data = []
     side = "left" if s["left"]["boat"] else "right"
     other_side = "right" if s["left"]["boat"] else "left"
@@ -85,7 +132,13 @@ def successor(s):
 
         data.append(this_data)
 
-    return data
+
+    filtered = []
+    for entry in data:
+        if (entry["left"]["wolves"] <= entry["left"]["chickens"] or entry["left"]["chickens"] == 0) and (entry["right"]["wolves"] <= entry["right"]["chickens"] or entry["right"]["chickens"] == 0):
+            filtered.append(entry)
+
+    return filtered
 
 if __name__ == "__main__":
     args = sys.argv
@@ -94,6 +147,8 @@ if __name__ == "__main__":
     mode = args[3]
     output = args[4]
 
-    # res = bfs(data, goal)
-    adjacent = successor(data)
+    counter, path = dfs(data, goal)
+    print("Path generated in {} steps".format(counter))
+    for node in path:
+        print(node)
 
