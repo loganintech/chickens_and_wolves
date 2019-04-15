@@ -2,6 +2,7 @@ import sys
 import math
 import copy
 import pprint
+import heapq
 
 
 def load(path):
@@ -40,6 +41,62 @@ def graph_search(problem, fringe_tree) returns solution or failure
             closed[node] = state[node]
             fringe = insert_all(expand(node, problem), fringe)
  """
+def astar(start, goal):
+
+    def heuristic(s, goal):
+        animals_to_move = 0
+        animals_to_move += abs(s["left"]["chickens"] - s["right"]["chickens"])
+        animals_to_move += abs(s["left"]["wolves"] - s["right"]["wolves"])
+        return animals_to_move // 2 # Divide by two, because we can move two animals per step
+
+    closed = {}
+    fringe = [] # Open set
+    from_scores = { state_to_dict_key(start): heuristic(start, goal) }
+    heapq.heappush(fringe, (from_scores[state_to_dict_key(start)], start))
+    came_from = {}
+    scores = {state_to_dict_key(start): 0}
+    counter = 0
+
+    while fringe:
+        (_, state) = heapq.heappop(fringe)
+
+        if state_to_dict_key(state) == state_to_dict_key(goal):
+            path = []
+            while came_from.get(state_to_dict_key(state)) != None:
+                path.insert(0, state)
+                state = came_from[state_to_dict_key(state)]
+            path.insert(0, start)
+            return counter, path
+
+        closed[state_to_dict_key(state)] = True
+
+        for successor in successors(state):
+            if state_to_dict_key(successor) in closed:
+                continue
+
+            score = scores[state_to_dict_key(state)] + heuristic(state, goal)
+            if successor not in fringe:
+                heapq.heappush(fringe, (math.inf if from_scores.get(state_to_dict_key(successor)) == None else from_scores[state_to_dict_key(successor)], successor))
+                counter += 1
+            elif score > scores[state_to_dict_key(successor)]:
+                continue
+
+            came_from[state_to_dict_key(successor)] = state_to_dict_key(state)
+            from_scores[state_to_dict_key(successor)] = score
+            scores[state_to_dict_key(successor)] = from_scores[state_to_dict_key(successor)] + heuristic(successor, goal)
+
+def astar(start, goal):
+
+    def heuristic(s, goal):
+        animals_to_move = 0
+        animals_to_move += abs(s["left"]["chickens"] - s["right"]["chickens"])
+        animals_to_move += abs(s["left"]["wolves"] - s["right"]["wolves"])
+        return animals_to_move // 2  # Divide by two, because we can move two animals per step
+
+    closed_set = {}
+    open_set = [] # This will be a priority queue.
+
+
 
 
 def bfs(problem, goal):
@@ -56,15 +113,15 @@ def bfs(problem, goal):
         counter += 1
 
         if state_to_dict_key(state) == state_to_dict_key(goal):
-            path = [] 
+            path = []
             while closed.get(state_to_dict_key(state)) != None:
                 path.insert(0, state)
                 state = closed[state_to_dict_key(state)]
             path.insert(0, problem)
             return counter, path
-        
-        print("exploring " + state_to_dict_key(state))
-            
+
+        # print("exploring " + state_to_dict_key(state))
+
         for successor in successors(state):
             if state_to_dict_key(successor) not in closed:
                 fringe.append(successor)
@@ -83,7 +140,7 @@ def dls(problem, goal, depth):
         state = completeState[1]
         curDepth = completeState[0]
         if(curDepth > depth):
-            continue 
+            continue
         # print("[{}] State".format(counter), state)
         counter += 1
 
@@ -108,7 +165,7 @@ def iddfs(problem, goal):
         counter, path = dls(problem, goal, depth)
         if(counter == math.inf):
             depth = depth+1
-        else: 
+        else:
             return counter, path
 
 
@@ -133,7 +190,7 @@ def dfs(problem, goal):
             path.insert(0, problem)
             return counter, path
 
-        print("exploring " + state_to_dict_key(state))
+        # print("exploring " + state_to_dict_key(state))
 
         for successor in successors(state):
             if state_to_dict_key(successor) not in closed:
@@ -258,6 +315,8 @@ if __name__ == "__main__":
         counter, path = dfs(data, goal)
     elif mode == "iddfs":
         counter, path = iddfs(data, goal)
+    elif mode == "astar":
+        counter, path = astar(data, goal)
 
     import os
     with open(output, "w") as f:
