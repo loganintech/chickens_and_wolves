@@ -44,50 +44,102 @@ def graph_search(problem, fringe_tree) returns solution or failure
 
 def bfs(problem, goal):
     closed = {}
-    fringe = [[problem]]
+    fringe = [problem]
+    closed[state_to_dict_key(problem)] = None
     counter = 0
     while True:
         if len(fringe) == 0:
             return math.inf, ["We failed, chief"]
-        path = fringe.pop(0)
-        state = path[-1]
+        state = fringe.pop(0)
 
         # print("[{}] State".format(counter), state)
         counter += 1
 
         if state_to_dict_key(state) == state_to_dict_key(goal):
+            path = [] 
+            while closed.get(state_to_dict_key(state)) != None:
+                path.insert(0, state)
+                state = closed[state_to_dict_key(state)]
+            path.insert(0, problem)
+            return counter, path
+        
+        print("exploring " + state_to_dict_key(state))
+            
+        for successor in successors(state):
+            if state_to_dict_key(successor) not in closed:
+                fringe.append(successor)
+                closed[state_to_dict_key(successor)] = state
+
+
+def dls(problem, goal, depth):
+    closed = {}
+    closed[state_to_dict_key(problem)] = None
+    fringe = [(0, problem)]
+    counter = 0
+    while True:
+        if len(fringe) == 0:
+            return math.inf, ["We failed, chief"]
+        completeState = fringe.pop(len(fringe) - 1)
+        state = completeState[1]
+        curDepth = completeState[0]
+        if(curDepth > depth):
+            continue 
+        # print("[{}] State".format(counter), state)
+        counter += 1
+
+        if state_to_dict_key(state) == state_to_dict_key(goal):
+            path = []
+            while closed.get(state_to_dict_key(state)) != None:
+                path.insert(0, state)
+                state = closed[state_to_dict_key(state)]
+            path.insert(0, problem)
             return counter, path
 
-        if state_to_dict_key(state) not in closed:
-            for successor in successors(state):
-                new_path = copy.deepcopy(path)
-                new_path.append(successor)
-                fringe.append(new_path)
-            closed[state_to_dict_key(state)] = state
+
+        for successor in successors(state):
+            if state_to_dict_key(successor) not in closed:
+                fringe.append((curDepth+1, successor))
+                closed[state_to_dict_key(successor)] = state
+
+
+def iddfs(problem, goal):
+    depth = 1
+    while(True):
+        counter, path = dls(problem, goal, depth)
+        if(counter == math.inf):
+            depth = depth+1
+        else: 
+            return counter, path
 
 
 def dfs(problem, goal):
     closed = {}
-    fringe = [[problem]]
+    closed[state_to_dict_key(problem)] = None
+    fringe = [problem]
     counter = 0
     while True:
         if len(fringe) == 0:
             return math.inf, ["We failed, chief"]
-        path = fringe.pop(len(fringe) - 1)
-        state = path[-1]
+        state = fringe.pop(len(fringe) - 1)
 
         # print("[{}] State".format(counter), state)
         counter += 1
 
         if state_to_dict_key(state) == state_to_dict_key(goal):
+            path = []
+            while closed.get(state_to_dict_key(state)) != None:
+                path.insert(0, state)
+                state = closed[state_to_dict_key(state)]
+            path.insert(0, problem)
             return counter, path
 
-        if state_to_dict_key(state) not in closed:
-            for successor in successors(state):
-                new_path = copy.deepcopy(path)
-                new_path.append(successor)
-                fringe.append(new_path)
-            closed[state_to_dict_key(state)] = state
+        print("exploring " + state_to_dict_key(state))
+
+        for successor in successors(state):
+            if state_to_dict_key(successor) not in closed:
+                fringe.append(successor)
+                closed[state_to_dict_key(successor)] = state
+
 
 
 def state_to_dict_key(state):
@@ -204,6 +256,8 @@ if __name__ == "__main__":
         counter, path = bfs(data, goal)
     elif mode == "dfs":
         counter, path = dfs(data, goal)
+    elif mode == "iddfs":
+        counter, path = iddfs(data, goal)
 
     import os
     with open(output, "w") as f:
