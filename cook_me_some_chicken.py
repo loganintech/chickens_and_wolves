@@ -44,7 +44,7 @@ def graph_search(problem, fringe_tree) returns solution or failure
 
 
 def backup_astar(start, goal):
-
+    #TODO: Needs to compare to goal 
     def heuristic(s, goal):
         animals_to_move = 0
         animals_to_move += abs(s["left"]["chickens"] - s["right"]["chickens"])
@@ -94,21 +94,24 @@ def astar(start, goal):
 
     def heuristic(s, goal):
         animals_to_move = 0
-        animals_to_move += abs(s["left"]["chickens"] - s["right"]["chickens"])
-        animals_to_move += abs(s["left"]["wolves"] - s["right"]["wolves"])
+        animals_to_move += abs(s["left"]["chickens"] - goal["left"]["chickens"])
+        animals_to_move += abs(s["left"]["wolves"] - goal["left"]["wolves"])
         return animals_to_move // 2  # Divide by two, because we can move two animals per step
 
     closed_set = {}
     open_set = []  # This will be a priority queue.
-    heapq.heappush(open_set, (0, start))
+    heapq.heappush(open_set, (0, state_to_dict_key(start)))
     came_from = {}
     going_score = {state_to_dict_key(start): 0}
     from_score = {state_to_dict_key(start): heuristic(start, goal)}
     counter = 0
     while len(open_set) > 0:
         (x, current) = heapq.heappop(open_set)
+        current = dict_key_to_state(current)
         print(current)
+        counter += 1
         if state_to_dict_key(current) == state_to_dict_key(goal):
+            print("Goal found")
             path = []
             while closed_set.get(state_to_dict_key(current)) != None:
                 path.insert(0, current)
@@ -128,7 +131,7 @@ def astar(start, goal):
 
             if (x, successor) not in open_set:
                 heapq.heappush(
-                    open_set, (from_score[state_to_dict_key(current)] + heuristic(successor, goal), successor))
+                    open_set, (from_score[state_to_dict_key(current)] + heuristic(successor, goal), state_to_dict_key(successor)))
             elif score >= going_score[state_to_dict_key(successor)]:
                 continue
 
@@ -248,6 +251,23 @@ def state_to_dict_key(state):
     )
 
 
+def dict_key_to_state(dict_key):
+    values = dict_key.replace("\n", ",")
+    values = values.split(",")
+    dictReturn =  {}
+    data = {
+            "left": {
+                "chickens": int(values[0]),
+                "wolves": int(values[1]),
+                "boat": int(values[2]),
+            },
+            "right": {
+                "chickens": int(values[3]),
+                "wolves": int(values[4]),
+                "boat": int(values[5]),
+            }
+        }
+    return data
 def successors(s):
     data = []
     side = "left" if s["left"]["boat"] else "right"
