@@ -3,27 +3,27 @@ import math
 import copy
 import pprint
 
+def parse_string(strng):
+    parts = strng.split("\n")
+    left = parts[0].split(",")
+    right = parts[1].split(",")
+    return {
+        "left": {
+            "chickens": int(left[0]),
+            "wolves": int(left[1]),
+            "boat": left[2] == "1",
+        },
+        "right": {
+            "chickens": int(right[0]),
+            "wolves": int(right[1]),
+            "boat": right[2] == "1",
+        }
+    }
 
 def load(path):
-
     with open(path, "r") as f:
-        left = f.readline().strip().split(',')
-        right = f.readline().strip().split(",")
-
-        data = {
-            "left": {
-                "chickens": int(left[0]),
-                "wolves": int(left[1]),
-                "boat": left[2] == "1",
-            },
-            "right": {
-                "chickens": int(right[0]),
-                "wolves": int(right[1]),
-                "boat": right[2] == "1",
-            }
-        }
-
-        return data
+        strng = "{}\n{}".format(f.readline().trim(), f.readline().trim())
+        return parse_string(strng)
 
 
 """
@@ -42,33 +42,39 @@ def graph_search(problem, fringe_tree) returns solution or failure
  """
 
 
-def bfs(problem, goal):
+def bfs(start, goal):
     closed = {}
-    fringe = [[problem]]
+    closed[state_to_dict_key(start)] = "start"
+    fringe = [start]
     counter = 0
     while True:
         if len(fringe) == 0:
             return math.inf, ["We failed, chief"]
-        path = fringe.pop(0)
-        state = path[-1]
+        state = fringe.pop(0)
 
-        # print("[{}] State".format(counter), state)
+        print("[{}] State".format(counter), state)
         counter += 1
 
         if state_to_dict_key(state) == state_to_dict_key(goal):
-            return counter, path
 
-        if state_to_dict_key(state) not in closed:
+            path = []
+            while closed.get
+                step = closed[state_to_dict_key(state)]
+                path.append(parse_string(step))
+
+
+
+            return counter, closed
+
+        if state_to_dict_key(state) not in closed or state_to_dict_key(state) == state_to_dict_key(start):
             for successor in successors(state):
-                new_path = copy.deepcopy(path)
-                new_path.append(successor)
-                fringe.append(new_path)
-            closed[state_to_dict_key(state)] = state
+                fringe.append(successor)
+                closed[state_to_dict_key(successor)] = state_to_dict_key(state)
 
 
-def dfs(problem, goal):
+def dfs(start, goal):
     closed = {}
-    fringe = [[problem]]
+    fringe = [[start]]
     counter = 0
     while True:
         if len(fringe) == 0:
