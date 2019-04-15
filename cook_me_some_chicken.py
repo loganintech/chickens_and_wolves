@@ -99,9 +99,10 @@ def astar(start, goal):
         return animals_to_move // 2  # Divide by two, because we can move two animals per step
 
     closed_set = {}
+    closed_set[state_to_dict_key(start)] = None
     open_set = []  # This will be a priority queue.
     heapq.heappush(open_set, (0, state_to_dict_key(start)))
-    came_from = {}
+    
     going_score = {state_to_dict_key(start): 0}
     from_score = {state_to_dict_key(start): heuristic(start, goal)}
     counter = 0
@@ -116,11 +117,11 @@ def astar(start, goal):
             while closed_set.get(state_to_dict_key(current)) != None:
                 path.insert(0, current)
                 current = closed_set[state_to_dict_key(current)]
+                print(current)
             path.insert(0, start)
             print(counter, path)
             return counter, path
 
-        closed_set[state_to_dict_key(current)] = True
 
         for successor in successors(current):
             if state_to_dict_key(successor) in closed_set:
@@ -132,6 +133,7 @@ def astar(start, goal):
             if (x, successor) not in open_set:
                 heapq.heappush(
                     open_set, (from_score[state_to_dict_key(current)] + heuristic(successor, goal), state_to_dict_key(successor)))
+                closed_set[state_to_dict_key(successor)] = current
             elif score >= going_score[state_to_dict_key(successor)]:
                 continue
 
