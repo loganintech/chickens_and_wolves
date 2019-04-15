@@ -41,17 +41,19 @@ def graph_search(problem, fringe_tree) returns solution or failure
             closed[node] = state[node]
             fringe = insert_all(expand(node, problem), fringe)
  """
-def astar(start, goal):
+
+
+def backup_astar(start, goal):
 
     def heuristic(s, goal):
         animals_to_move = 0
         animals_to_move += abs(s["left"]["chickens"] - s["right"]["chickens"])
         animals_to_move += abs(s["left"]["wolves"] - s["right"]["wolves"])
-        return animals_to_move // 2 # Divide by two, because we can move two animals per step
+        return animals_to_move // 2  # Divide by two, because we can move two animals per step
 
     closed = {}
-    fringe = [] # Open set
-    from_scores = { state_to_dict_key(start): heuristic(start, goal) }
+    fringe = []  # Open set
+    from_scores = {state_to_dict_key(start): heuristic(start, goal)}
     heapq.heappush(fringe, (from_scores[state_to_dict_key(start)], start))
     came_from = {}
     scores = {state_to_dict_key(start): 0}
@@ -76,14 +78,17 @@ def astar(start, goal):
 
             score = scores[state_to_dict_key(state)] + heuristic(state, goal)
             if successor not in fringe:
-                heapq.heappush(fringe, (math.inf if from_scores.get(state_to_dict_key(successor)) == None else from_scores[state_to_dict_key(successor)], successor))
+                heapq.heappush(fringe, (math.inf if from_scores.get(state_to_dict_key(
+                    successor)) == None else from_scores[state_to_dict_key(successor)], successor))
                 counter += 1
             elif score > scores[state_to_dict_key(successor)]:
                 continue
 
             came_from[state_to_dict_key(successor)] = state_to_dict_key(state)
             from_scores[state_to_dict_key(successor)] = score
-            scores[state_to_dict_key(successor)] = from_scores[state_to_dict_key(successor)] + heuristic(successor, goal)
+            scores[state_to_dict_key(successor)] = from_scores[state_to_dict_key(
+                successor)] + heuristic(successor, goal)
+
 
 def astar(start, goal):
 
@@ -94,9 +99,43 @@ def astar(start, goal):
         return animals_to_move // 2  # Divide by two, because we can move two animals per step
 
     closed_set = {}
-    open_set = [] # This will be a priority queue.
+    open_set = []  # This will be a priority queue.
+    heapq.heappush(open_set, (0, start))
+    came_from = {}
+    going_score = {state_to_dict_key(start): 0}
+    from_score = {state_to_dict_key(start): heuristic(start, goal)}
+    counter = 0
+    while len(open_set) > 0:
+        (x, current) = heapq.heappop(open_set)
 
+        if state_to_dict_key(current) == state_to_dict_key(goal):
+            path = []
+            while closed_set.get(state_to_dict_key(current)) != None:
+                path.insert(0, current)
+                current = closed_set[state_to_dict_key(current)]
+            path.insert(0, start)
+            print(counter, path)
+            return counter, path
 
+        closed_set[state_to_dict_key(current)] = True
+
+        for successor in successors(current):
+            if state_to_dict_key(successor) in closed_set:
+                continue
+
+            score = math.inf if state_to_dict_key(
+                successor) not in going_score else going_score[current] + heuristic(current, successor)
+
+        if (x, state_to_dict_key(successor)) not in open_set:
+            heapq.heappush(
+                open_set, (from_score[state_to_dict_key(current)] + heuristic(successor, goal)))
+        elif score >= going_score[state_to_dict_key(successor)]:
+            continue
+
+        came_from[state_to_dict_key(successor)] = state_to_dict_key(current)
+        going_score[state_to_dict_key(successor)] = score
+        from_score[state_to_dict_key(
+            successor)] = score + heuristic(successor, goal)
 
 
 def bfs(problem, goal):
@@ -152,7 +191,6 @@ def dls(problem, goal, depth):
             path.insert(0, problem)
             return counter, path
 
-
         for successor in successors(state):
             if state_to_dict_key(successor) not in closed:
                 fringe.append((curDepth+1, successor))
@@ -198,7 +236,6 @@ def dfs(problem, goal):
                 closed[state_to_dict_key(successor)] = state
 
 
-
 def state_to_dict_key(state):
     return "{},{},{}\n{},{},{}".format(
         state["left"]["chickens"],
@@ -224,7 +261,8 @@ def successors(s):
     }
 
     for i in range(1, 3):
-        if s[side]["chickens"] < i: break
+        if s[side]["chickens"] < i:
+            break
         this_data = copy.deepcopy(entry)
 
         this_data[side]["chickens"] = s[side]["chickens"] - i
