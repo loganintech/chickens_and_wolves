@@ -114,25 +114,30 @@ def successors(s):
         }
     }
 
-    animals = ["chickens", "wolves"]
-    for animal in range(len(animals)):
-        for i in range(s[side][animals[animal]] + 1):
-            if i < 1:
-                continue
-            if i > 2:
-                break
-            this_data = copy.deepcopy(entry)
+    for i in range(1, 3):
+        if s[side]["chickens"] < i: break
+        this_data = copy.deepcopy(entry)
 
-            this_data[side][animals[animal]] = s[side][animals[animal]] - i
-            this_data[other_side][animals[animal]
-                                  ] = s[other_side][animals[animal]] + i
+        this_data[side]["chickens"] = s[side]["chickens"] - i
+        this_data[other_side]["chickens"] = s[other_side]["chickens"] + i
 
-            # This just copies the data, it doesn't need to modify it
-            this_data[side][animals[animal ^ 1]] = s[side][animals[animal ^ 1]]
-            this_data[other_side][animals[animal ^ 1]
-                                  ] = s[other_side][animals[animal ^ 1]]
+        # This just copies the data, it doesn't need to modify it
+        this_data[side]["wolves"] = s[side]["wolves"]
+        this_data[other_side]["wolves"] = s[other_side]["wolves"]
 
-            data.append(this_data)
+        data.append(this_data)
+
+    if s[side]["wolves"] >= 1:
+        # One wolf
+        this_data = copy.deepcopy(entry)
+        this_data[side]["wolves"] = s[side]["wolves"] - 1
+        this_data[other_side]["wolves"] = s[other_side]["wolves"] + 1
+
+        # This just copies the data, it doesn't need to modify it
+        this_data[side]["chickens"] = s[side]["chickens"]
+        this_data[other_side]["chickens"] = s[other_side]["chickens"]
+
+        data.append(this_data)
 
     if s[side]["chickens"] > 0 and s[side]["wolves"] > 0:
         this_data = copy.deepcopy(entry)
@@ -141,6 +146,18 @@ def successors(s):
         this_data[other_side]["chickens"] = s[other_side]["chickens"] + 1
         this_data[side]["wolves"] = s[side]["wolves"] - 1
         this_data[other_side]["wolves"] = s[other_side]["wolves"] + 1
+
+        data.append(this_data)
+
+    if s[side]["wolves"] >= 2:
+        # Two wolves
+        this_data = copy.deepcopy(entry)
+        this_data[side]["wolves"] = s[side]["wolves"] - 2
+        this_data[other_side]["wolves"] = s[other_side]["wolves"] + 2
+
+        # This just copies the data, it doesn't need to modify it
+        this_data[side]["chickens"] = s[side]["chickens"]
+        this_data[other_side]["chickens"] = s[other_side]["chickens"]
 
         data.append(this_data)
 
@@ -158,13 +175,17 @@ def step_string(state, other):
     wolf_difference = abs(
         state["left"]["wolves"] - other["left"]["wolves"])
 
-    return_string = "{:<8}".format("[{}]".format("Left" if state["left"]["boat"] else "Right"))
+    return_string = "{:<8}".format("[{}]".format(
+        "Left" if state["left"]["boat"] else "Right"))
     if chicken_difference != 0 and wolf_difference != 0:
-        return_string += "Put {} chicken and {} wolf on the boat.".format(chicken_difference, wolf_difference)
+        return_string += "Put {} chicken and {} wolf on the boat.".format(
+            chicken_difference, wolf_difference)
     elif wolf_difference != 0:
-        return_string += "Put {} {} on the boat.".format(wolf_difference, "wolf" if wolf_difference == 1 else "wolves")
+        return_string += "Put {} {} on the boat.".format(
+            wolf_difference, "wolf" if wolf_difference == 1 else "wolves")
     elif chicken_difference != 0:
-        return_string += "Put {} {} on the boat.".format(chicken_difference, "chicken" if chicken_difference == 1 else "chickens")
+        return_string += "Put {} {} on the boat.".format(
+            chicken_difference, "chicken" if chicken_difference == 1 else "chickens")
     else:
         return_string += "Two identical states were passed to this function."
 
