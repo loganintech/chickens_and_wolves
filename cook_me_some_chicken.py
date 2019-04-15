@@ -107,7 +107,7 @@ def astar(start, goal):
     counter = 0
     while len(open_set) > 0:
         (x, current) = heapq.heappop(open_set)
-
+        print(current)
         if state_to_dict_key(current) == state_to_dict_key(goal):
             path = []
             while closed_set.get(state_to_dict_key(current)) != None:
@@ -123,19 +123,20 @@ def astar(start, goal):
             if state_to_dict_key(successor) in closed_set:
                 continue
 
-            score = math.inf if state_to_dict_key(
-                successor) not in going_score else going_score[current] + heuristic(current, successor)
+            score = math.inf if state_to_dict_key(successor) not in going_score else going_score[state_to_dict_key(
+                current)] + heuristic(current, successor)
 
-        if (x, state_to_dict_key(successor)) not in open_set:
-            heapq.heappush(
-                open_set, (from_score[state_to_dict_key(current)] + heuristic(successor, goal)))
-        elif score >= going_score[state_to_dict_key(successor)]:
-            continue
+            if (x, successor) not in open_set:
+                heapq.heappush(
+                    open_set, (from_score[state_to_dict_key(current)] + heuristic(successor, goal), successor))
+            elif score >= going_score[state_to_dict_key(successor)]:
+                continue
 
-        came_from[state_to_dict_key(successor)] = state_to_dict_key(current)
-        going_score[state_to_dict_key(successor)] = score
-        from_score[state_to_dict_key(
-            successor)] = score + heuristic(successor, goal)
+            came_from[state_to_dict_key(
+                successor)] = state_to_dict_key(current)
+            going_score[state_to_dict_key(successor)] = score
+            from_score[state_to_dict_key(
+                successor)] = score + heuristic(successor, goal)
 
 
 def bfs(problem, goal):
