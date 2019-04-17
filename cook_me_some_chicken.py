@@ -130,6 +130,8 @@ def astar(start, goal):
             score = math.inf if state_to_dict_key(successor) not in gscore else gscore[state_to_dict_key(
                 current)] + heuristic(current, successor)
 
+            print(score)
+
             print((x, state_to_dict_key(successor)), (x, state_to_dict_key(successor)) in open_set, open_set)
             if (x, state_to_dict_key(successor)) not in open_set:
                 heapq.heappush(
@@ -148,6 +150,8 @@ def another_astar(start, goal):
         animals_to_move = 0
         animals_to_move += abs(s["left"]["chickens"] - d["left"]["chickens"])
         animals_to_move += abs(s["left"]["wolves"] - d["left"]["wolves"])
+        animals_to_move += 0 if s["left"]["boat"] == goal["left"]["boat"] else 1
+
         return animals_to_move // 2
 
 
