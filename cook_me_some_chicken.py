@@ -30,16 +30,16 @@ def load(path):
 """
 GRAPH SEARCH Pseudocode
 
-def graph_search(problem, fringe_tree) returns solution or failure
+def graph_search(start, fringe_tree) returns solution or failure
     closed = HASHSET_OF_VISITED_PLACES
-    fringe = insert(create_node(initial_state[problem]), fringe)
+    fringe = insert(create_node(initial_state[start]), fringe)
     while True:
         if fringe is empty return failure
         node = remove_front(fringe)
-        if goal_test(problem, state[node]) then return solution(node)
+        if goal_test(start, state[node]) then return solution(node)
         if state[node] is not in closed
             closed[node] = state[node]
-            fringe = insert_all(expand(node, problem), fringe)
+            fringe = insert_all(expand(node, start), fringe)
  """
 def astar(start, goal):
 
@@ -47,7 +47,7 @@ def astar(start, goal):
         animals_to_move = 0
         chickens = abs(s["left"]["chickens"] - goal["left"]["chickens"])
         wolves = abs(s["left"]["wolves"] - goal["left"]["wolves"])
-        animals_to_move = (chickens + wolves) - (max(chickens, wolves) -  min(chickens,wolves)) 
+        animals_to_move = (chickens + wolves) - (abs(chickens - wolves))
         if(animals_to_move > 2):
             animals_to_move *= 3
         return animals_to_move  # Divide by two, because we can move two animals per step
@@ -56,7 +56,7 @@ def astar(start, goal):
     closed_set[state_to_dict_key(start)] = None
     open_set = []  # This will be a priority queue.
     heapq.heappush(open_set, (0, state_to_dict_key(start)))
-    
+
     going_score = {state_to_dict_key(start): 0}
     counter = 0
     while len(open_set) > 0:
@@ -85,10 +85,10 @@ def astar(start, goal):
                 going_score[state_to_dict_key(successor)] = score
 
 
-def bfs(problem, goal):
+def bfs(start, goal):
     closed = {}
-    fringe = [problem]
-    closed[state_to_dict_key(problem)] = None
+    fringe = [start]
+    closed[state_to_dict_key(start)] = None
     counter = 0
     while True:
         if len(fringe) == 0:
@@ -103,7 +103,7 @@ def bfs(problem, goal):
             while closed.get(state_to_dict_key(state)) != None:
                 path.insert(0, state)
                 state = closed[state_to_dict_key(state)]
-            path.insert(0, problem)
+            path.insert(0, start)
             return counter, path
 
         # print("exploring " + state_to_dict_key(state))
@@ -114,50 +114,55 @@ def bfs(problem, goal):
                 closed[state_to_dict_key(successor)] = state
 
 
-def dls(problem, goal, depth):
-    closed = {}
-    closed[state_to_dict_key(problem)] = None
-    fringe = [(0, problem)]
+def dls(start, goal, depth):
+    closed = {
+        state_to_dict_key(start): (0, None)
+    }
+    fringe = [(0, start)]
     counter = 0
     while True:
         if len(fringe) == 0:
             return math.inf, ["We failed, chief"]
         completeState = fringe.pop(len(fringe) - 1)
-        state = completeState[1]
         curDepth = completeState[0]
+        state = completeState[1]
         if(curDepth > depth):
             continue
+
         # print("[{}] State".format(counter), state)
         counter += 1
 
         if state_to_dict_key(state) == state_to_dict_key(goal):
             path = []
-            while closed.get(state_to_dict_key(state)) != None:
+            while closed.get(state_to_dict_key(state))[1] != None:
                 path.insert(0, state)
-                state = closed[state_to_dict_key(state)]
-            path.insert(0, problem)
+                completeState = closed[state_to_dict_key(state)]
+                depth = completeState[0]
+                state = completeState[1]
+            path.insert(0, start)
             return counter, path
 
         for successor in successors(state):
-            if state_to_dict_key(successor) not in closed:
+            if state_to_dict_key(successor) not in closed or closed[state_to_dict_key(successor)][0] > curDepth:
                 fringe.append((curDepth+1, successor))
-                closed[state_to_dict_key(successor)] = state
+                closed[state_to_dict_key(successor)] = (curDepth + 1, state)
 
 
-def iddfs(problem, goal):
-    depth = 1
+def iddfs(start, goal):
+    depth = 0
     while(True):
-        counter, path = dls(problem, goal, depth)
+        counter, path = dls(start, goal, depth)
         if(counter == math.inf):
             depth = depth+1
+            print(depth)
         else:
             return counter, path
 
 
-def dfs(problem, goal):
+def dfs(start, goal):
     closed = {}
-    closed[state_to_dict_key(problem)] = None
-    fringe = [problem]
+    closed[state_to_dict_key(start)] = None
+    fringe = [start]
     counter = 0
     while True:
         if len(fringe) == 0:
@@ -172,7 +177,7 @@ def dfs(problem, goal):
             while closed.get(state_to_dict_key(state)) != None:
                 path.insert(0, state)
                 state = closed[state_to_dict_key(state)]
-            path.insert(0, problem)
+            path.insert(0, start)
             return counter, path
 
         # print("exploring " + state_to_dict_key(state))
