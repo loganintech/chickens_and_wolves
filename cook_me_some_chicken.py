@@ -45,10 +45,12 @@ def astar(start, goal):
 
     def heuristic(s, goal):
         animals_to_move = 0
-        boatSide = "left" if s["left"]["boat"] else "right"
-        animals_to_move += abs(s[boatSide]["chickens"] - goal[boatSide]["chickens"])
-        animals_to_move += abs(s[boatSide]["wolves"] - goal[boatSide]["wolves"])
-        return animals_to_move / 2 # Divide by two, because we can move two animals per step
+        chickens = abs(s["left"]["chickens"] - goal["left"]["chickens"])
+        wolves = abs(s["left"]["wolves"] - goal["left"]["wolves"])
+        animals_to_move = (chickens + wolves) - (max(chickens, wolves) -  min(chickens,wolves)) 
+        if(animals_to_move > 2):
+            animals_to_move *= 3
+        return animals_to_move  # Divide by two, because we can move two animals per step
 
     closed_set = {}
     closed_set[state_to_dict_key(start)] = None
@@ -60,7 +62,6 @@ def astar(start, goal):
     while len(open_set) > 0:
         (x, current) = heapq.heappop(open_set)
         current = dict_key_to_state(current)
-        print(current)
         counter += 1
         if state_to_dict_key(current) == state_to_dict_key(goal):
             print("Goal found")
@@ -68,18 +69,15 @@ def astar(start, goal):
             while closed_set.get(state_to_dict_key(current)) != None:
                 path.insert(0, current)
                 current = closed_set[state_to_dict_key(current)]
-                print(current)
             path.insert(0, start)
-            print(counter, path)
             return counter, path
 
 
         for successor in successors(current):
-            if state_to_dict_key(successor) in closed_set:
+            score = going_score[state_to_dict_key(current)] + 1
+            if state_to_dict_key(successor) in closed_set and going_score[state_to_dict_key(successor)] <= score:
                 continue
 
-            score = going_score[state_to_dict_key(current)] + 1
-            print(score)
             if (x, successor) not in open_set:
                 heapq.heappush(
                     open_set, (score  + heuristic(successor, goal), state_to_dict_key(successor)))
