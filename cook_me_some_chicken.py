@@ -41,62 +41,14 @@ def graph_search(problem, fringe_tree) returns solution or failure
             closed[node] = state[node]
             fringe = insert_all(expand(node, problem), fringe)
  """
-
-
-def backup_astar(start, goal):
-    #TODO: Needs to compare to goal 
-    def heuristic(s, goal):
-        animals_to_move = 0
-        animals_to_move += abs(s["left"]["chickens"] - s["right"]["chickens"])
-        animals_to_move += abs(s["left"]["wolves"] - s["right"]["wolves"])
-        return animals_to_move // 2  # Divide by two, because we can move two animals per step
-
-    closed = {}
-    fringe = []  # Open set
-    from_scores = {state_to_dict_key(start): heuristic(start, goal)}
-    heapq.heappush(fringe, (from_scores[state_to_dict_key(start)], start))
-    came_from = {}
-    scores = {state_to_dict_key(start): 0}
-    counter = 0
-
-    while fringe:
-        (_, state) = heapq.heappop(fringe)
-
-        if state_to_dict_key(state) == state_to_dict_key(goal):
-            path = []
-            while came_from.get(state_to_dict_key(state)) != None:
-                path.insert(0, state)
-                state = came_from[state_to_dict_key(state)]
-            path.insert(0, start)
-            return counter, path
-
-        closed[state_to_dict_key(state)] = True
-
-        for successor in successors(state):
-            if state_to_dict_key(successor) in closed:
-                continue
-
-            score = scores[state_to_dict_key(state)] + heuristic(state, goal)
-            if successor not in fringe:
-                heapq.heappush(fringe, (math.inf if from_scores.get(state_to_dict_key(
-                    successor)) == None else from_scores[state_to_dict_key(successor)], successor))
-                counter += 1
-            elif score > scores[state_to_dict_key(successor)]:
-                continue
-
-            came_from[state_to_dict_key(successor)] = state_to_dict_key(state)
-            from_scores[state_to_dict_key(successor)] = score
-            scores[state_to_dict_key(successor)] = from_scores[state_to_dict_key(
-                successor)] + heuristic(successor, goal)
-
-
 def astar(start, goal):
 
     def heuristic(s, goal):
         animals_to_move = 0
-        animals_to_move += abs(s["left"]["chickens"] - goal["left"]["chickens"])
-        animals_to_move += abs(s["left"]["wolves"] - goal["left"]["wolves"])
-        return animals_to_move // 2  # Divide by two, because we can move two animals per step
+        boatSide = "left" if s["left"]["boat"] else "right"
+        animals_to_move += abs(s[boatSide]["chickens"] - goal[boatSide]["chickens"])
+        animals_to_move += abs(s[boatSide]["wolves"] - goal[boatSide]["wolves"])
+        return animals_to_move / 2 # Divide by two, because we can move two animals per step
 
     closed_set = {}
     closed_set[state_to_dict_key(start)] = None
@@ -104,7 +56,6 @@ def astar(start, goal):
     heapq.heappush(open_set, (0, state_to_dict_key(start)))
     
     going_score = {state_to_dict_key(start): 0}
-    from_score = {state_to_dict_key(start): heuristic(start, goal)}
     counter = 0
     while len(open_set) > 0:
         (x, current) = heapq.heappop(open_set)
@@ -127,21 +78,13 @@ def astar(start, goal):
             if state_to_dict_key(successor) in closed_set:
                 continue
 
-            score = math.inf if state_to_dict_key(successor) not in going_score else going_score[state_to_dict_key(
-                current)] + heuristic(current, successor)
-
+            score = going_score[state_to_dict_key(current)] + 1
+            print(score)
             if (x, successor) not in open_set:
                 heapq.heappush(
-                    open_set, (from_score[state_to_dict_key(current)] + heuristic(successor, goal), state_to_dict_key(successor)))
+                    open_set, (score  + heuristic(successor, goal), state_to_dict_key(successor)))
                 closed_set[state_to_dict_key(successor)] = current
-            elif score >= going_score[state_to_dict_key(successor)]:
-                continue
-
-            came_from[state_to_dict_key(
-                successor)] = state_to_dict_key(current)
-            going_score[state_to_dict_key(successor)] = score
-            from_score[state_to_dict_key(
-                successor)] = score + heuristic(successor, goal)
+                going_score[state_to_dict_key(successor)] = score
 
 
 def bfs(problem, goal):
