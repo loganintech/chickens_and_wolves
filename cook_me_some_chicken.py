@@ -44,7 +44,7 @@ def graph_search(problem, fringe_tree) returns solution or failure
 
 
 def backup_astar(start, goal):
-    #TODO: Needs to compare to goal 
+    #TODO: Needs to compare to goal
     def heuristic(s, goal):
         animals_to_move = 0
         animals_to_move += abs(s["left"]["chickens"] - s["right"]["chickens"])
@@ -102,14 +102,14 @@ def astar(start, goal):
     closed_set[state_to_dict_key(start)] = None
     open_set = []  # This will be a priority queue.
     heapq.heappush(open_set, (0, state_to_dict_key(start)))
-    
-    going_score = {state_to_dict_key(start): 0}
-    from_score = {state_to_dict_key(start): heuristic(start, goal)}
+
+    gscore = {state_to_dict_key(start): 0}
+    fscore = {state_to_dict_key(start): heuristic(start, goal)}
     counter = 0
     while len(open_set) > 0:
         (x, current) = heapq.heappop(open_set)
         current = dict_key_to_state(current)
-        print(current)
+        # print(current)
         counter += 1
         if state_to_dict_key(current) == state_to_dict_key(goal):
             print("Goal found")
@@ -117,9 +117,9 @@ def astar(start, goal):
             while closed_set.get(state_to_dict_key(current)) != None:
                 path.insert(0, current)
                 current = closed_set[state_to_dict_key(current)]
-                print(current)
+                # print(current)
             path.insert(0, start)
-            print(counter, path)
+            # print(counter, path)
             return counter, path
 
 
@@ -127,21 +127,64 @@ def astar(start, goal):
             if state_to_dict_key(successor) in closed_set:
                 continue
 
-            score = math.inf if state_to_dict_key(successor) not in going_score else going_score[state_to_dict_key(
+            score = math.inf if state_to_dict_key(successor) not in gscore else gscore[state_to_dict_key(
                 current)] + heuristic(current, successor)
 
-            if (x, successor) not in open_set:
+            print((x, state_to_dict_key(successor)), (x, state_to_dict_key(successor)) in open_set, open_set)
+            if (x, state_to_dict_key(successor)) not in open_set:
                 heapq.heappush(
-                    open_set, (from_score[state_to_dict_key(current)] + heuristic(successor, goal), state_to_dict_key(successor)))
+                    open_set, (fscore[state_to_dict_key(current)] + heuristic(successor, goal), state_to_dict_key(successor)))
                 closed_set[state_to_dict_key(successor)] = current
-            elif score >= going_score[state_to_dict_key(successor)]:
+            elif score >= gscore[state_to_dict_key(successor)]:
                 continue
 
-            came_from[state_to_dict_key(
-                successor)] = state_to_dict_key(current)
-            going_score[state_to_dict_key(successor)] = score
-            from_score[state_to_dict_key(
+            gscore[state_to_dict_key(successor)] = score
+            fscore[state_to_dict_key(
                 successor)] = score + heuristic(successor, goal)
+
+def another_astar(start, goal):
+
+    def heuristic(s, d):
+        animals_to_move = 0
+        animals_to_move += abs(s["left"]["chickens"] - d["left"]["chickens"])
+        animals_to_move += abs(s["left"]["wolves"] - d["left"]["wolves"])
+        return animals_to_move // 2
+
+
+    frontier = []
+    heapq.heappush(frontier, (0, state_to_dict_key(start)))
+
+    came_from = {}
+    cost_so_far = {}
+    came_from[state_to_dict_key(start)] = None
+    cost_so_far[state_to_dict_key(start)] = 0
+    counter = 0
+    while frontier:
+        (_, current) = heapq.heappop(frontier)
+        current = dict_key_to_state(current)
+
+        if state_to_dict_key(current) == state_to_dict_key(goal):
+            print("Goal found")
+            path = []
+            while came_from.get(state_to_dict_key(current)) != None:
+                path.insert(0, current)
+                current = dict_key_to_state(came_from[state_to_dict_key(current)])
+                # print(current)
+            path.insert(0, start)
+            # print(counter, path)
+            return counter, path
+
+
+        for next in successors(current):
+            new_cost = cost_so_far[state_to_dict_key(current)] + heuristic(current, next)
+            if state_to_dict_key(next) not in cost_so_far or new_cost < cost_so_far[state_to_dict_key(next)]:
+                cost_so_far[state_to_dict_key(next)] = new_cost
+                priority = new_cost + heuristic(next, goal)
+                heapq.heappush(frontier, (priority, state_to_dict_key(next)))
+                came_from[state_to_dict_key(next)] = state_to_dict_key(current)
+                counter += 1
+
+
 
 
 def bfs(problem, goal):
@@ -261,12 +304,12 @@ def dict_key_to_state(dict_key):
             "left": {
                 "chickens": int(values[0]),
                 "wolves": int(values[1]),
-                "boat": int(values[2]),
+                "boat": values[2] == "1",
             },
             "right": {
                 "chickens": int(values[3]),
                 "wolves": int(values[4]),
-                "boat": int(values[5]),
+                "boat": values[5] == "1",
             }
         }
     return data
@@ -377,7 +420,7 @@ if __name__ == "__main__":
     elif mode == "iddfs":
         counter, path = iddfs(data, goal)
     elif mode == "astar":
-        counter, path = astar(data, goal)
+        counter, path = another_astar(data, goal)
 
     import os
     with open(output, "w") as f:
