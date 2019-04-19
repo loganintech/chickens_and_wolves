@@ -47,9 +47,7 @@ def astar(start, goal):
         animals_to_move = 0
         chickens = abs(s["left"]["chickens"] - goal["left"]["chickens"])
         wolves = abs(s["left"]["wolves"] - goal["left"]["wolves"])
-        animals_to_move = (chickens + wolves) - (max(chickens, wolves) -  min(chickens,wolves)) 
-        if(animals_to_move > 2):
-            animals_to_move *= 3
+        animals_to_move = (min(chickens, wolves)-1)*4 
         return animals_to_move  # Divide by two, because we can move two animals per step
 
     closed_set = {}
@@ -75,7 +73,7 @@ def astar(start, goal):
 
         for successor in successors(current):
             score = going_score[state_to_dict_key(current)] + 1
-            if state_to_dict_key(successor) in closed_set and going_score[state_to_dict_key(successor)] <= score:
+            if state_to_dict_key(successor) in closed_set and (going_score[state_to_dict_key(successor)] <= score):
                 continue
 
             if (x, successor) not in open_set:
@@ -121,37 +119,37 @@ def dls(problem, goal, depth):
     counter = 0
     while True:
         if len(fringe) == 0:
-            return math.inf, ["We failed, chief"]
+            return counter, []
         completeState = fringe.pop(len(fringe) - 1)
         state = completeState[1]
         curDepth = completeState[0]
         if(curDepth > depth):
             continue
-        # print("[{}] State".format(counter), state)
         counter += 1
-
         if state_to_dict_key(state) == state_to_dict_key(goal):
             path = []
             while closed.get(state_to_dict_key(state)) != None:
                 path.insert(0, state)
-                state = closed[state_to_dict_key(state)]
+                state = closed[state_to_dict_key(state)][0]
             path.insert(0, problem)
             return counter, path
 
         for successor in successors(state):
-            if state_to_dict_key(successor) not in closed:
+            if state_to_dict_key(successor) not in closed or (closed[state_to_dict_key(successor)] != None and closed[state_to_dict_key(successor)][1] > curDepth):
                 fringe.append((curDepth+1, successor))
-                closed[state_to_dict_key(successor)] = state
-
+                closed[state_to_dict_key(successor)] = (state, curDepth)
 
 def iddfs(problem, goal):
     depth = 1
-    while(True):
+    counterAll = 0
+    while(depth < 500):
         counter, path = dls(problem, goal, depth)
-        if(counter == math.inf):
+        counterAll += counter
+        if(path == []):
+            print(depth)
             depth = depth+1
         else:
-            return counter, path
+            return counterAll, path
 
 
 def dfs(problem, goal):
