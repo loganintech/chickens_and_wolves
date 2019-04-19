@@ -114,15 +114,14 @@ def bfs(start, goal):
                 closed[state_to_dict_key(successor)] = state
 
 
-def dls(start, goal, depth):
+def dls(start, goal, depth, counter):
     closed = {
         state_to_dict_key(start): (0, None)
     }
     fringe = [(0, start)]
-    counter = 0
     while True:
         if len(fringe) == 0:
-            return math.inf, ["We failed, chief"]
+            return counter, []
         completeState = fringe.pop(len(fringe) - 1)
         curDepth = completeState[0]
         state = completeState[1]
@@ -150,9 +149,10 @@ def dls(start, goal, depth):
 
 def iddfs(start, goal):
     depth = 0
+    counter = 0
     while(True):
-        counter, path = dls(start, goal, depth)
-        if(counter == math.inf):
+        counter, path = dls(start, goal, depth, counter)
+        if(len(path) == 0):
             depth = depth+1
             print(depth)
         else:
